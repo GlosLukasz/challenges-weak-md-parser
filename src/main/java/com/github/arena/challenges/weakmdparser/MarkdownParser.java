@@ -2,79 +2,65 @@ package com.github.arena.challenges.weakmdparser;
 
 public class MarkdownParser {
 
-    String parse(String markdown) {
+    public String parse(String markdown) {
         String[] lines = markdown.split("\n");
         String result = "";
         boolean activeList = false;
 
-        for (int i = 0; i < lines.length; i++) {
+        for (var line : lines) {
 
-            String theLine = parseHeader(lines[i]);
+            String theLine = parseHeader(line);
 
-            if (theLine == null) {
-                theLine = parseListItem(lines[i]);
-            }
+            if (theLine == null)
+                theLine = parseListItem(line);
 
-            if (theLine == null) {
-                theLine = parseParagraph(lines[i]);
-            }
+
+            if (theLine == null)
+                theLine = parseParagraph(line);
+
 
             if (theLine.matches("(<li>).*") && !theLine.matches("(<h).*") && !theLine.matches("(<p>).*") && !activeList) {
                 activeList = true;
                 result = result + "<ul>";
-                result = result + theLine;
             } else if (!theLine.matches("(<li>).*") && activeList) {
                 activeList = false;
                 result = result + "</ul>";
-                result = result + theLine;
-            } else {
-                result = result + theLine;
             }
+            result = result + theLine;
         }
 
-        if (activeList) {
+        if (activeList)
             result = result + "</ul>";
-        }
 
         return result;
     }
 
-    protected String parseHeader(String markdown) {
+    private String parseHeader(String markdown) {
         int count = 0;
 
-        for (int i = 0; i < markdown.length() && markdown.charAt(i) == '#'; i++) {
+        for (int i = 0; i < markdown.length() && markdown.charAt(i) == '#'; i++)
             count++;
-        }
 
-        if (count == 0) {
+        if (count == 0)
             return null;
-        }
 
-        return "<h" + Integer.toString(count) + ">" + markdown.substring(count + 1) + "</h" + Integer.toString(count) + ">";
+        return "<h" + (count) + ">" + markdown.substring(count + 1) + "</h" + (count) + ">";
     }
 
-    public String parseListItem(String markdown) {
-        if (markdown.startsWith("*")) {
-            String skipAsterisk = markdown.substring(2);
-            String listItemString = parseSomeSymbols(skipAsterisk);
-            return "<li>" + listItemString + "</li>";
-        }
+    private String parseListItem(String markdown) {
+        if (markdown.startsWith("*"))
+            return "<li>" + parseSomeSymbols(markdown.substring(2)) + "</li>";
 
         return null;
     }
 
-    public String parseParagraph(String markdown) {
+    private String parseParagraph(String markdown) {
         return "<p>" + parseSomeSymbols(markdown) + "</p>";
     }
 
-    public String parseSomeSymbols(String markdown) {
+    private String parseSomeSymbols(String markdown) {
+        String workingOn = markdown.replaceAll("__(.+)__", "<strong>$1</strong>");
 
-        String lookingFor = "__(.+)__";
-        String update = "<strong>$1</strong>";
-        String workingOn = markdown.replaceAll(lookingFor, update);
-
-        lookingFor = "_(.+)_";
-        update = "<em>$1</em>";
-        return workingOn.replaceAll(lookingFor, update);
+        return workingOn.replaceAll("_(.+)_", "<em>$1</em>");
     }
 }
