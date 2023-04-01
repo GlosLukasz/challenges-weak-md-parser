@@ -2,21 +2,26 @@ package com.github.arena.challenges.weakmdparser;
 
 public class MarkdownParser {
 
-    private String result = "";
+    private StringBuilder result;
     private boolean activeList = false;
 
     public String parse(String markdown) {
+        if (markdown == null)
+            throw new NullPointerException();
+
+        result = new StringBuilder();
+
         String[] lines = markdown.split("\n");
 
         for (var line : lines) {
             String theLine = parseLine(line);
-            parseLineWithListTags(theLine);
+            result.append(parseLineWithListTags(theLine));
         }
 
         if (activeList)
-            result = result + "</ul>";
+            result.append("</ul>");
 
-        return result;
+        return result.toString();
     }
 
     private String parseLine(String line) {
@@ -34,13 +39,13 @@ public class MarkdownParser {
     private String parseLineWithListTags(String theLine) {
         if (isStartOfList(theLine)) {
             activeList = true;
-            result = result + "<ul>";
+            theLine = ("<ul>") + theLine;
         } else if (isEndOfList(theLine)) {
             activeList = false;
-            result = result + "</ul>";
+            theLine = ("</ul>") + theLine;
         }
 
-        return result = result + theLine;
+        return theLine;
     }
 
     private boolean isStartOfList(String theLine) {
