@@ -9,14 +9,14 @@ public class MarkdownParser {
 
         for (int i = 0; i < lines.length; i++) {
 
-            String theLine = ph(lines[i]);
+            String theLine = parseHeader(lines[i]);
 
             if (theLine == null) {
-                theLine = li(lines[i]);
+                theLine = parseListItem(lines[i]);
             }
 
             if (theLine == null) {
-                theLine = p(lines[i]);
+                theLine = parseParagraph(lines[i]);
             }
 
             if (theLine.matches("(<li>).*") && !theLine.matches("(<h).*") && !theLine.matches("(<p>).*") && !activeList) {
@@ -39,7 +39,7 @@ public class MarkdownParser {
         return result;
     }
 
-    protected String ph(String markdown) {
+    protected String parseHeader(String markdown) {
         int count = 0;
 
         for (int i = 0; i < markdown.length() && markdown.charAt(i) == '#'; i++) {
@@ -53,7 +53,7 @@ public class MarkdownParser {
         return "<h" + Integer.toString(count) + ">" + markdown.substring(count + 1) + "</h" + Integer.toString(count) + ">";
     }
 
-    public String li(String markdown) {
+    public String parseListItem(String markdown) {
         if (markdown.startsWith("*")) {
             String skipAsterisk = markdown.substring(2);
             String listItemString = parseSomeSymbols(skipAsterisk);
@@ -63,7 +63,7 @@ public class MarkdownParser {
         return null;
     }
 
-    public String p(String markdown) {
+    public String parseParagraph(String markdown) {
         return "<p>" + parseSomeSymbols(markdown) + "</p>";
     }
 
