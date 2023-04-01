@@ -2,37 +2,53 @@ package com.github.arena.challenges.weakmdparser;
 
 public class MarkdownParser {
 
+    private String result = "";
+    private boolean activeList = false;
+
     public String parse(String markdown) {
         String[] lines = markdown.split("\n");
-        String result = "";
-        boolean activeList = false;
 
         for (var line : lines) {
-
-            String theLine = parseHeader(line);
-
-            if (theLine == null)
-                theLine = parseListItem(line);
-
-
-            if (theLine == null)
-                theLine = parseParagraph(line);
-
-
-            if (theLine.matches("(<li>).*") && !theLine.matches("(<h).*") && !theLine.matches("(<p>).*") && !activeList) {
-                activeList = true;
-                result = result + "<ul>";
-            } else if (!theLine.matches("(<li>).*") && activeList) {
-                activeList = false;
-                result = result + "</ul>";
-            }
-            result = result + theLine;
+            String theLine = parseLine(line);
+            parseLineWithListTags(theLine);
         }
 
         if (activeList)
             result = result + "</ul>";
 
         return result;
+    }
+
+    private String parseLine(String line) {
+        String theLine = parseHeader(line);
+
+        if (theLine == null)
+            theLine = parseListItem(line);
+
+        if (theLine == null)
+            theLine = parseParagraph(line);
+
+        return theLine;
+    }
+
+    private String parseLineWithListTags(String theLine) {
+        if (isStartOfList(theLine)) {
+            activeList = true;
+            result = result + "<ul>";
+        } else if (isEndOfList(theLine)) {
+            activeList = false;
+            result = result + "</ul>";
+        }
+
+        return result = result + theLine;
+    }
+
+    private boolean isStartOfList(String theLine) {
+        return theLine.matches("(<li>).*") && !theLine.matches("(<h).*") && !theLine.matches("(<p>).*") && !activeList;
+    }
+
+    private boolean isEndOfList(String theLine) {
+        return !theLine.matches("(<li>).*") && activeList;
     }
 
     private String parseHeader(String markdown) {
